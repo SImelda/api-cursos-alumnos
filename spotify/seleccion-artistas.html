@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Seleccion de artistas</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="container mt-5">
+
+<h1>Seleccion de Tracks Spotify</h1>
+
+
+<h3 class="mt-4">Guardar Token</h3>
+
+<input 
+id="tokenInput"
+class="form-control mb-2"
+placeholder="Pega aquí tu token de Spotify"
+>
+
+<button class="btn btn-primary" onclick="guardarToken()">
+Guardar Token
+</button>
+
+
+<h3 class="mt-4">Selecciona una canción</h3>
+
+<select id="trackSelect" class="form-select">
+
+<option value="">Seleccione una canción</option>
+
+<option value="6HU7h9RYOaPRFeh0R3UeAr">Deja Vu</option>
+
+<option value="6De0lHrwBfPfrhorm9q1Xl">Me rehúso</option>
+
+<option value="2lTm559tuIvatlT1u0JYG2">Baile inolvidable</option>
+
+<option value="7qiZfU4dY1lWllzX7mPBI3">Shape of You</option>
+
+</select>
+
+
+<div id="resultado" class="mt-4"></div>
+
+
+<button class="btn btn-secondary mt-3" onclick="limpiarPagina()">
+Limpiar
+</button>
+
+
+<script>
+
+function guardarToken(){
+
+let token = document.getElementById("tokenInput").value
+
+sessionStorage.setItem("spotifyToken", token)
+
+alert("Token guardado en sessionStorage")
+
+}
+
+
+
+document.getElementById("trackSelect").addEventListener("change", obtenerTrack)
+
+
+
+async function obtenerTrack(){
+
+let trackId = document.getElementById("trackSelect").value
+
+let token = sessionStorage.getItem("spotifyToken")
+
+if(!token){
+
+alert("Primero guarda el token")
+
+return
+
+}
+
+try{
+
+let respuesta = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`,{
+
+headers:{
+"Authorization":`Bearer ${token}`
+}
+
+})
+
+let data = await respuesta.json()
+
+mostrarTrack(data)
+
+}
+
+catch(error){
+
+document.getElementById("resultado").innerHTML = `
+
+<div class="alert alert-danger">
+Error al llamar la API de Spotify
+</div>
+
+`
+
+}
+
+}
+
+
+
+function mostrarTrack(data){
+
+let artistasHTML = ""
+
+data.artists.forEach(artista => {
+
+artistasHTML += `
+
+<li>
+
+<a href="${artista.external_urls.spotify}" target="_blank">
+${artista.name}
+</a>
+
+</li>
+
+`
+
+})
+
+
+document.getElementById("resultado").innerHTML = `
+
+<h3>${data.name}</h3>
+
+<p><b>Album:</b> ${data.album.name}</p>
+
+<p><b>Tipo de album:</b> ${data.album.album_type}</p>
+
+<p><b>Total canciones:</b> ${data.album.total_tracks}</p>
+
+<h4>Artistas</h4>
+
+<ul>
+${artistasHTML}
+</ul>
+
+`
+
+}
+
+
+
+function limpiarPagina(){
+
+document.getElementById("resultado").innerHTML = ""
+
+document.getElementById("trackSelect").value = ""
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
